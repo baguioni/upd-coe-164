@@ -4,24 +4,26 @@ use std::io;
 fn main() {
     let mut str_in = String::new();
 
-    io::stdin().read_line(&mut str_in)
-        .expect("Invalid input!");
+    io::stdin().read_line(&mut str_in).expect("Invalid input!");
 
-    let n_testcases: u64 = str_in.trim().parse().expect("Not an integer!"); 
+    let n_testcases: u64 = str_in.trim().parse().expect("Not an integer!");
     let mut taylor_series = TaylorSeries::new();
 
-    for i in 1..n_testcases + 1{
+    for i in 1..n_testcases + 1 {
         str_in.clear();
-        io::stdin().read_line(&mut str_in)
-            .expect("Invalid input!");
+        io::stdin().read_line(&mut str_in).expect("Invalid input!");
 
-        let split_in: Vec <&str> = str_in.splitn(3, ' ').collect();
+        let split_in: Vec<&str> = str_in.splitn(3, ' ').collect();
 
         let cmd: char = split_in[0].chars().next().unwrap_or('\0');
         let r_desired: f64 = split_in[1].trim().parse().expect("Not a float!");
         let x: f64 = split_in[2].trim().parse().expect("Not a number!");
 
-        println!("Function #{}: {:.2}", i, taylor_series.estimate(cmd, x, r_desired))
+        println!(
+            "Function #{}: {:.2}",
+            i,
+            taylor_series.estimate(cmd, x, r_desired)
+        )
     }
 }
 
