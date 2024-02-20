@@ -1,4 +1,3 @@
-use core::panic;
 use std::i64;
 use std::io;
 
@@ -11,18 +10,18 @@ fn main() {
     let n_testcases: u64 = str_in.trim().parse().expect("Not an integer!"); 
     let mut taylor_series = TaylorSeries::new();
 
-    for _ in 1..n_testcases + 1{
+    for i in 1..n_testcases + 1{
         str_in.clear();
         io::stdin().read_line(&mut str_in)
             .expect("Invalid input!");
 
         let split_in: Vec <&str> = str_in.splitn(3, ' ').collect();
 
-        let cmd = split_in[0].chars().next().unwrap_or('\0');
+        let cmd: char = split_in[0].chars().next().unwrap_or('\0');
         let r_desired: f64 = split_in[1].trim().parse().expect("Not a float!");
         let x: f64 = split_in[2].trim().parse().expect("Not a number!");
 
-        println!("{}", taylor_series.estimate(cmd, x, r_desired))
+        println!("Function #{}: {:.2}", i, taylor_series.estimate(cmd, x, r_desired))
     }
 }
 
@@ -55,7 +54,7 @@ impl TaylorSeries {
                 'e' => self.natural_exponent(x, n),
                 's' => self.sin(x, n),
                 'c' => self.cos(x, n),
-                _ => panic!("Function type was not indicated"),
+                _ => 0.0, // how to better handle this
             };
 
             sum += value;
