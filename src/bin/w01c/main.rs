@@ -1,5 +1,42 @@
 use std::io;
 
+fn main() {
+    let mut str_in = String::new();
+
+    str_in.clear();
+    io::stdin()
+        .read_line(&mut str_in)
+        .expect("Failed to read input");
+
+    let n_testcases: u64 = str_in.trim()
+        .parse()
+        .expect("Input is not an integer!");
+
+    for t in 1..=n_testcases {
+        str_in.clear();
+        io::stdin()
+            .read_line(&mut str_in)
+            .expect("Failed to read input");
+
+        let phone_as_str: String = str_in.trim().to_string();
+        
+        let phone_as_int: u64 = str_in.trim()
+            .parse()
+            .expect("Input is not an integer!");
+
+        let prefix: u64 = (&phone_as_str[0..4]).parse().unwrap();
+        let last_digit: u64 = (&phone_as_str[4..5]).parse().unwrap();
+
+        let network_type: u64 = get_network_from_prefix(prefix, last_digit);
+
+        if network_type == 0 {
+            println!("Case #{}: {}", t, display_type(network_type));
+        } else {
+            println!("Case #{}: {} | {}", t, display_type(network_type), display_number(phone_as_int.to_string()))
+        }
+    }
+}
+
 // prefix length 4
 // last_digit length 1
 fn get_network_from_prefix(prefix: u64, last_digit: u64) -> u64 {
@@ -36,34 +73,19 @@ fn get_network_from_prefix(prefix: u64, last_digit: u64) -> u64 {
     return 0;
 }
 
-fn main() {
-    let mut str_in = String::new();
-
-    str_in.clear();
-    io::stdin()
-        .read_line(&mut str_in)
-        .expect("Failed to read input");
-
-    let n_testcases: u64 = str_in.trim()
-        .parse()
-        .expect("Input is not an integer!");
-
-    for t in 1..=n_testcases {
-        str_in.clear();
-        io::stdin()
-            .read_line(&mut str_in)
-            .expect("Failed to read input");
-        
-        let phone_as_int: u64 = str_in.trim()
-            .parse()
-            .expect("Input is not an integer!");
-
-        let phone_as_str: String = phone_as_int.to_string();
-
-        println!("{}", phone_as_int)
-
-        // TODO: Write a routine that will print out the mobile number and
-        //       network provider according to the specs. Don't forget to use
-        //       the get_network_from_prefix() function above!
+fn display_type(network_type: u64) -> String {
+    match network_type {
+        1 => "Globe/TM".to_string(),
+        2 => "Smart/Sun/TNT".to_string(),
+        3 => "DITO".to_string(),
+        _ => "Invalid".to_string(),
     }
+}
+
+fn display_number(phone_as_str: String) -> String {
+    let prefix: u64 = (&phone_as_str[..3]).parse().unwrap();
+    let uid_left: u64 = (&phone_as_str[3..6]).parse().unwrap();
+    let uid_right: u64 = (&phone_as_str[6..]).parse().unwrap();
+
+    format!("+63 {} {} {}", prefix, uid_left, uid_right)
 }
