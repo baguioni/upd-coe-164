@@ -1,49 +1,29 @@
 use core::panic;
-use std::env;
-use std::fs::{write, File};
 use std::i64;
-use std::io::{self, BufRead};
-use std::path::Path;
+use std::io;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let config = Config::new(&args);
-    println!("Input path: {}", config.input_path);
+    let mut str_in = String::new();
+
+    io::stdin().read_line(&mut str_in)
+        .expect("Invalid input!");
+
+    let n_testcases: u64 = str_in.trim().parse().expect("Not an integer!"); 
     let mut taylor_series = TaylorSeries::new();
 
-    if let Ok(lines) = read_lines(config.input_path) {
-        let rows = lines.flatten().collect::<Vec<String>>();
-        let mut output_string = String::new();
-        let mut n: usize = 0;
+    for _ in 1..n_testcases + 1{
+        str_in.clear();
+        io::stdin().read_line(&mut str_in)
+            .expect("Invalid input!");
 
-        for (index, line) in rows.iter().enumerate() {
-            if index == 0 {
-                n = line.parse().unwrap();
-                continue;
-            // ensure to use next n-lines
-            } else if index <= n {
-                let text: String = line.parse().unwrap();
-                let values: Vec<&str> = text.split(" ").collect();
-                let (fn_type, r, x) = (
-                    values[0].chars().next().unwrap_or('\0'),
-                    values[1].parse::<f64>(),
-                    values[2].parse::<f64>(),
-                );
+        let split_in: Vec <&str> = str_in.splitn(3, ' ').collect();
 
-                output_string.push_str(&format!(
-                    "Function #{}: {:.2}\n",
-                    index,
-                    taylor_series.estimate(fn_type, x.unwrap(), r.unwrap())
-                ));
-            }
-        }
+        let cmd = split_in[0].chars().next().unwrap_or('\0');
+        let r_desired: f64 = split_in[1].trim().parse().expect("Not a float!");
+        let x: f64 = split_in[2].trim().parse().expect("Not a number!");
 
-        write_to_output(config.output_path, output_string);
+        println!("{}", taylor_series.estimate(cmd, x, r_desired))
     }
-}
-
-fn write_to_output(path: String, data: String) {
-    write(path, data).expect("Error writing to file");
 }
 
 struct TaylorSeries {}
@@ -94,33 +74,5 @@ fn factorial(n: i64) -> f64 {
     match n {
         0 => 1.0,
         _ => (1..=n).map(|x| x as f64).product(),
-    }
-}
-
-// https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
-// https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html#creating-a-constructor-for-config
-struct Config {
-    input_path: String,
-    output_path: String,
-}
-
-impl Config {
-    fn new(args: &[String]) -> Config {
-        // we can add error handling here next time
-        let input_path = args[1].clone();
-        let output_path = args[2].clone();
-
-        Config {
-            input_path,
-            output_path,
-        }
     }
 }
