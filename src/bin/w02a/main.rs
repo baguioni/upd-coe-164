@@ -81,8 +81,6 @@ fn main() {
 
     let n_players: usize = str_in.trim().parse().expect("Invalid number!");
 
-    let mut output_strings: Vec<String> = Vec::new();
-
     for i in 1..=n_players {
         let mut str_in = String::new();
 
@@ -120,26 +118,22 @@ fn main() {
         }
 
         if item_amount > 0 {
-            output_strings.push(format!(
+            println!(
                 "Player #{}:\nName: {}\nItem: {}x {}",
                 i,
                 player.name,
                 item_amount,
                 player_info[1].to_string()
-            ));
+            );
         } else {
-            output_strings.push(format!("Player #{}:\nName: {}\nItem: NONE", i, player.name));
+            println!("Player #{}:\nName: {}\nItem: NONE", i, player.name);
         }
 
-        output_strings.push(format!("----------LOG----------"));
+        println!("----------LOG----------");
 
         for action in input_actions {
-            output_strings.push(format!("{}", player.action(action)));
+            println!("{}", player.action(action));
         }
-    }
-
-    for output in output_strings {
-        println!("{}", output);
     }
 }
 
