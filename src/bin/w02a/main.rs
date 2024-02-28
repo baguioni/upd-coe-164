@@ -31,7 +31,7 @@ impl Player {
         }
     }
 
-    fn action(mut self, action_type: PlayerAction) -> String {
+    fn action(&mut self, action_type: PlayerAction) -> String {
         match action_type {
             PlayerAction::left => {
                 self.pos -= 1;
@@ -43,12 +43,16 @@ impl Player {
                 format!("New position: {}", self.pos)
             }
             PlayerAction::uitem => {
-                let item: PlayerItem = self.item.unwrap();
+                if let None = self.item {
+                    return "Player has no item to use".to_string();
+                }
+
+                let item = self.item.take().unwrap();
 
                 match item.item_type { 
                     PlayerItemQtyType::Consumable(mut count) => {
                         count -= 1;
-                        if count < 1 {
+                        if count == 0 {
                             self.item = None;
                             format!("Player used <{}>. It is now gone", item.name)
                         } else {
@@ -75,7 +79,7 @@ fn main() {
 
     let n_players: usize = str_in.trim().parse().expect("Invalid number!");
 
-    for _i in 0..n_players{
+    for i in 1..=n_players {
         let mut str_in = String::new();
 
         io::stdin().read_line(&mut str_in).expect("Invalid input!");
@@ -83,14 +87,49 @@ fn main() {
         let player_info: Vec<&str> = str_in.split_whitespace().collect();
         let item_amount = player_info[2].parse::<u64>().unwrap();
 
-        let item = PlayerItem {
-            name: player_info[1].to_string(),
-            item_type: if item_amount == 1 {PlayerItemQtyType::Once} else {PlayerItemQtyType::Consumable(item_amount)},
+        let item = match item_amount {
+            0 => None,
+            _ => {
+                Some(PlayerItem {
+                    name: player_info[1].to_string(),
+                    item_type: if item_amount == 1 {PlayerItemQtyType::Once} else {PlayerItemQtyType::Consumable(item_amount)},
+                })
+            }
+        };
+        let mut player = Player::new(player_info[0].to_string(), item);
+
+        let mut str_in = String::new();
+
+        io::stdin().read_line(&mut str_in).expect("Invalid input!");
+
+        let n_actions: usize = str_in.trim().parse().expect("Invalid number!");
+
+        let mut input_actions = Vec::<PlayerAction>::with_capacity(n_actions);
+
+        for _i in 0..n_actions {
+            let mut str_in = String::new();
+
+            io::stdin().read_line(&mut str_in).expect("Invalid input!");
+            input_actions.push(string_to_action(str_in.trim()));
         };
 
-        let mut player = Player::new(player_info[0].to_string(), Some(item));
+        if item_amount > 0 {
+            println!("Player #{}:\nName: {}\nItem: {}x {}", i, player.name, item_amount, player_info[1].to_string());
+        } else {
+            println!("Player #{}:\nName: {}\nItem: NONE", i, player.name);
+        }
+
+        println!("----------LOG----------");
 
 
+    }
+}
 
+fn string_to_action(action: &str) -> PlayerAction {
+    match action {
+        "left" => PlayerAction::left,
+        "right" => PlayerAction::right,
+        "uitem" => PlayerAction::uitem, 
+        _ => unreachable!(), 
     }
 }
