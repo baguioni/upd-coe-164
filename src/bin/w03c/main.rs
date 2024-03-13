@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{borrow::Borrow, fmt::write, io};
+use std::{borrow::Borrow, collections::HashMap, fmt::write, io, num::NonZeroI8};
 
 fn main() {
     let mut str_in = String::new();
@@ -7,6 +7,8 @@ fn main() {
     io::stdin().read_line(&mut str_in).expect("Invalid input!");
 
     let num_borrowers: u64 = str_in.trim().parse().expect("Not an integer!");
+
+    let mut borrowers_hash: HashMap<String, Borrower>= HashMap::new();
 
     for _i in 1..=num_borrowers {
         str_in.clear();
@@ -29,17 +31,19 @@ fn main() {
 
         let borrower = Borrower { name, reg_date };
 
-        println!("{}", borrower);
+        borrowers_hash.insert(name, borrower);
     }
 
     str_in.clear();
     io::stdin().read_line(&mut str_in).expect("Invalid input!");
     let num_items: u64 = str_in.trim().parse().expect("Not an integer!");
 
+    let mut lent_items: Vec<LentItem> = Vec::new();
+    let mut lent_items_hash: HashMap<String, LentItem>= HashMap::new();
+
     for _i in 1..=num_items {
         str_in.clear();
         io::stdin().read_line(&mut str_in).expect("Invalid input!");
-
 
         let date_item: Vec<_> = str_in.trim().splitn(2, ' ').collect();
         
@@ -52,10 +56,14 @@ fn main() {
 
         let item = LentItem::new(name, year, month, day);
 
-        println!("{}", item);
-
+        lent_items.push(item);
+        lent_items_hash.insert(name, item);
     }
 
+    let lent_items_references: Vec<&LentItem> = lent_items.iter().collect();
+
+    str_in.clear();
+    io::stdin().read_line(&mut str_in).expect("Invalid input!");
     let num_commands: u64 = str_in.trim().parse().expect("Not an integer!");
 
     for _i in 1..=num_commands {
@@ -64,9 +72,61 @@ fn main() {
 
         let commands: Vec<&str> = str_in.trim().split(' ').collect();
 
+        let cmd = commands[0];
+
         if commands.len() == 2 {
+            let b_name = commands[1];
+            match cmd {
+                "bi" => {
+                    match borrowers_hash.get(b_name) {
+                        Some(person) => {
+                            println!("[BINFO] {}", person);
+
+                            let borrowed_items = person.borrowed_items(&lent_items_references);
+
+                            if !borrowed_items.is_empty() {
+                                println!("-----BORROWED ITEMS-----"); 
+                                for item in borrowed_items {
+                                    println!("{}", item);
+                                }
+                            }
+                        },
+                        None => println!("[BINFO] Borrower \"{}\" not found!", b_name)
+                    };
+                }, 
+                "ii" =>println!("{}", commands[1]),
+                "u" => println!("{}", commands[1]),
+                _ => unreachable!(),
+            }
         } else if commands.len() == 3 {
+            let i_name = commands[1];
+            let b_name = commands[2];
+            match cmd {
+                "b" => {
+                    let borrower = borrowers_hash.get(b_name);
+
+                    if borrower.is_none() {
+                        println!("[BORROW] Borrower \"{}\" not found!", b_name)
+                    }
+
+                    
+
+                    let mut item = lent_items_hash.get(i_name);
+
+                    if item.is_none() {
+                        println!("[BORROW] Item \"{}\" not found!", i_name);
+                    }
+
+                    LentItem::borrow(item, &borrower);
+                },
+                _ => unreachable!(),
+            }
         } else if commands.len() == 4 {
+            match cmd {
+                "t" => println!("{}", commands[1]),
+                _ => unreachable!(),
+                
+            }
         }
     }
 }
@@ -151,8 +211,17 @@ impl Borrower {
         }
     }
 
-    fn borrowed_items(&self, items: &Vec<&LentItem>) -> Vec<&LentItem> {
-        todo!()
+    fn borrowed_items<'a>(&self, items: &'a Vec<&'a LentItem<'a>>) -> Vec<&'a LentItem<'a>> {
+        let mut borrowed: Vec<&LentItem> = Vec::new();
+        for item in items {
+            if let Some(borrowed_by) = item.borrowed_by {
+                if self.name == borrowed_by.name {
+                    borrowed.push(item);
+                }
+            }
+        }
+
+        borrowed
     }
 }
 
