@@ -42,8 +42,10 @@ impl LentItem {
         }
     }
 
-    fn unborrow(&mut self) -> Option<&Borrower> {
-        self.borrowed_by.as_ref().take()
+    fn unborrow(&mut self) -> Option<Borrower> {
+        let previous = self.borrowed_by.take();
+        self.borrowed_by = None;
+        previous
     }
 
     fn transfer<'a>(
@@ -52,8 +54,9 @@ impl LentItem {
         to: &'a Borrower,
     ) -> (Option<&'a Borrower>, Option<&'a Borrower>) {
         let current_borrower_name = &self.borrowed_by.as_ref().unwrap().name;
+
         if from.name != *current_borrower_name || to.name == *current_borrower_name {
-            return (Some(from), None);
+            return (self.borrowed_by.as_ref(), None);
         }
 
         self.borrowed_by = Some(Borrower::new(
